@@ -10,9 +10,9 @@ from tkinter.ttk import *
 
 
 ''' PATHS '''
-iso_path = "S:/R&D/Production-Software-Releases/ISOs/"
-img_path = "S:/R&D/Production-Software-Releases/DoNotRemove/logo.png"
-iso_storage = "S:/R&D/WebRelease"
+iso_path = ""
+img_path = ""
+iso_storage = ""
 
 # Useable drive letters for the copier to look for
 # Make sure to update if using on a new computer and important drive letters are different
@@ -220,7 +220,7 @@ class App(Tk):
     def __init__(self):
         Tk.__init__(self)
 
-        self.title("UEI SD Card Software Copier")
+        self.title("UEI USB Software Copier")
         self.geometry('600x350')    
 
         self.main = Main(self)
