@@ -1,5 +1,5 @@
 # SD Card Copying Software
->*Created by Eoin Daly -- daly.e@husky.neu.edu*
+>*Created by Eoin Daly
 
 This program was made to help everyone's favorite Ray of Sunshine. This enables the copying of a single (or multiple, though that seems impractical) ISO image file to multiple USB devices at once.
 
@@ -17,6 +17,9 @@ To compile into an executable, use PyInstaller as `pyinstaller -wF USBCopy.py`. 
 > __-F__: Bundles executable to be only one file.\
 > __-i FILE.ico__: Set the icon of the executable to be the icon specified.
 
+## Downloading from GitHub
+---
+If you'd instead like to download this
 ## Core Operation
 ---
 Once the application is opened, the user is greeted with a GUI with simple instructions on how to select an ISO and begin copying. Once the "Begin File Transfer" button is pressed, the program searches for drives it can copy to. Currently, it is fitted to only look for drives that are non-essential (so no C:/ or S:/) and less that 8 GB in total size. If no drives are found, an error message is returned. 
