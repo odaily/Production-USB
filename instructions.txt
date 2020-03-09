@@ -1,0 +1,7 @@
+INSTRUCTIONS ON USING THE USB SOFTWARE COPIER
+
+1. Use the dropdown menu to select which software you would like to be copied.
+2. Click the 'Begin File Transfer' button in the center. 
+3. Another window will open letting the user know which drives the software will be copied to. Please make sure there are the expected number of USBs/drives.
+4. Click 'Okay' to start the copying process.
+5. Once the software finishes copying, another window will appear and let the user know it has been completed.
