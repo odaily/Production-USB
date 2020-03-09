@@ -4,18 +4,15 @@ import threading
 import time
 import shutil as sh
 from ctypes import *
-from datetime import datetime
 from PIL import ImageTk, Image
 from tkinter import *
 from tkinter.ttk import *
 
-from tkinterISstupid import MyOptionMenu
-
 
 ''' PATHS '''
-iso_path = "C:/Users/edaly/Desktop/Production-pyUSB/ISOs/" #"S:/Public/!Co-op & Intern/20_1_Eoin_Daly/Production-USB/ISOs/"
-img_path = "S:/R&D/Production-Software-Releases/!Source/logo.png"
-iso_storage = "S:/R&D/Production-Software-Releases/"
+iso_path = ""
+img_path = ""
+iso_storage = ""
 
 # Useable drive letters for the copier to look for
 # Make sure to update if using on a new computer and important drive letters are different
@@ -67,7 +64,6 @@ class Main(Frame):
         self.menu_var = StringVar(self)
         self.menu_var.set(self.options[0])
         self.file_menu = OptionMenu(self, self.menu_var, *self.options)
-        #self.file_menu = MyOptionMenu(self, self.options[0], *self.options)
         self.file_menu.grid(column=0,row=1,pady=10, padx=10, sticky=W)
         self.file_menu['menu'].configure(font=('helvetica',(14)))
 
