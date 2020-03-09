@@ -29,16 +29,16 @@ Once copying is completed, the loading bar stops and the user is alerted with an
 ---
 Certian variables are located at the top of the source code and are easy to change to help flexibility of the program. The following are a list of the important variables a future maintainer should be aware of if trying to edit the code.
 
-* `iso_path`: This is a variable set to be the path of a directory on the host computer that contains all the ISO image folders.
+* `iso_path`: This is a variable set to be the path of a local directory on the host computer that contains all the ISO image folders.
 * `img_path`: This is set to be the path of the UEI logo that is displayed in the main GUI. This could be on the shared drive, though it is preferred to be stored locally to ensure existence.
-* `iso_storage`: This is the location *__on the shared drive__* where new ISO image folders will be added to. 
+* `iso_storage`: This is the location *__on the shared drive__* where new ISO image folders will be added to and where the software will look to for checking for new ISOs. 
 * `drives`: A list of all drives the program is allowed to check. Currently, C and S have been removed, so any new important drives that are located on the host should be removed from this list.
 * `approx_times`: An attribute of the Main tkinter class. This is a dictionary that contains an approximate measure of the time needed to copy a specific ISO image. If a new image is added, it's name and approximate time should be added to this dictionary. Timing can be checked by using the provided `copyTime_SH.py` script (exchanging path variables) and running `time python copyTime_SH.py`. The program has error checking in place such that it can run without an approximate time, but it would be nice to have.
 
 
 ### Multithreading
 ---
-The application uses the python threading module to assist in faster copying to multiple devices. Because certain ISO images can take a long time to copy, it was decided that starting a thread to take care of copying to the different drives was much faster. 
+The application uses the python threading module to assist in faster copying to multiple devices. Because certain ISO images can take a long time to copy, it was decided that starting a thread to take care of copying to the different drives was much faster. A thread is also created when checking for new/updated ISO images.  
 
 ### File Copying
 ---
@@ -53,3 +53,9 @@ To add a new ISO image for the application to be able to use, place it in a fold
 ---
 If new extensions to the application need some new popup windows, the implementation is very simple. __Note:__ If a popup requiring no more functionality than a popup to display a message and the user closes it anyway, use the `alert()` method of the Main class. 
 To create a new popup, use the tkinter class `Toplevel()`. `Toplevel()` takes an argument for a master. In this case, the master should be the Main class, so if the popup is within a method for the Main class, a popup can be instatiated by saying `Toplevel(self)`. When creating widgets for this popup window, be sure to set their master to be your popup and not the Main.
+
+### Future Considerations / Improvements
+---
+The current methods involving finding ISO files do not account for instances where there may be a single subdirectory in any directory. The program simply searches for the directories containing only one item and assumes that item is an ISO. This should be fixed if Austyn decides to start stacking directories for no reason.
+
+There should also be better handling of threads throughout the program. Creating threads as class variables just to overwrite them when needing to run again seems sloppy (in the case of the get_files_thread and check_isos_thread). 
