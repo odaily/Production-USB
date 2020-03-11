@@ -32,6 +32,7 @@ Certian variables are located at the top of the source code and are easy to chan
 * `iso_path`: This is a variable set to be the path of a local directory on the host computer that contains all the ISO image folders.
 * `img_path`: This is set to be the path of the UEI logo that is displayed in the main GUI. This could be on the shared drive, though it is preferred to be stored locally to ensure existence.
 * `iso_storage`: This is the location *__on the shared drive__* where new ISO image folders will be added to and where the software will look to for checking for new ISOs. 
+* `instructions`: The path for the instructions.txt file for the built in help menu.
 * `drives`: A list of all drives the program is allowed to check. Currently, C and S have been removed, so any new important drives that are located on the host should be removed from this list.
 * `approx_times`: An attribute of the Main tkinter class. This is a dictionary that contains an approximate measure of the time needed to copy a specific ISO image. If a new image is added, it's name and approximate time should be added to this dictionary. Timing can be checked by using the provided `copyTime_SH.py` script (exchanging path variables) and running `time python copyTime_SH.py`. The program has error checking in place such that it can run without an approximate time, but it would be nice to have.
 
