@@ -13,6 +13,7 @@ from tkinter.ttk import *
 iso_path = ""
 img_path = ""
 iso_storage = ""
+instructions = ""
 
 # Useable drive letters for the copier to look for
 # Make sure to update if using on a new computer and important drive letters are different
@@ -40,9 +41,13 @@ class Main(Frame):
         self.approx_times = {"PowerDNA":"about 5 minutes", "UEIPAC Option 11/12":"20-30 minutes", "UEILogger":"less than 3 minutes", 
         "UEIOPC":"less than 3 minutes", "PowerPC":"about 5 minutes", "UEISIM":"less than 3 minutes"}
         self.iso_dict = {} # becomes populated in findISOs
+        if not os.path.exists(iso_path): # if the iso_path doesn't exit, create it
+            os.mkdir(iso_path)
         self.options = self.findISOs(iso_path)
-        self.options.insert(0, self.options[0]) # doubled the first value because OptionMenu removes the first value for some reason
-
+        try: # in the event iso_path is empty and returns an empty list
+            self.options.insert(0, self.options[0]) # doubled the first value because OptionMenu removes the first value for some reason
+        except IndexError:
+            pass
         ########################
         #### STATIC WIDGETS ####
         ########################
@@ -62,7 +67,10 @@ class Main(Frame):
         ##############################  
         # Dropdown menu
         self.menu_var = StringVar(self)
-        self.menu_var.set(self.options[0])
+        try:
+            self.menu_var.set(self.options[0])
+        except IndexError:
+            self.menu_var.set("No Options")
         self.file_menu = OptionMenu(self, self.menu_var, *self.options)
         self.file_menu.grid(column=0,row=1,pady=10, padx=10, sticky=W)
         self.file_menu['menu'].configure(font=('helvetica',(14)))
@@ -164,7 +172,7 @@ class Main(Frame):
     # help menu pop up 
     def helpMenu(self):
         # kept insructions in a .txt in case they need to be edited later.
-        with open('instructions.txt', 'r') as txt:
+        with open(instructions, 'r') as txt:
             lines = txt.readlines()
         
         full_text = ""
