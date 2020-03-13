@@ -57,7 +57,7 @@ class Main(Frame):
         # UEI Logo
         img = PhotoImage(file=img_path)
         logo = Label(self, image=img)
-        logo.grid(row=1, column=3)
+        logo.grid(row=1, column=3) 
         logo.photo = img
         # ISO storage location label
         Label(self,text="Finding ISOs from {}".format(iso_storage),wraplength=400, font=('helvetica',9,'italic')).grid(column=3,row=2,pady=10, padx=10,sticky=S+E)
@@ -188,7 +188,7 @@ class Main(Frame):
     def getFiles(self):
         self.thread_list = []
         self.failed_drives = 0
-        self.bar.start()
+        self.disableActions()
         # starts a thread to copy to each of the drives in the usable_drives_list
         for i in range(len(self.usable_drives_list)):
             copy_single = threading.Thread(target=self.copyIso, args=(i,))
@@ -197,7 +197,7 @@ class Main(Frame):
         # loops here while waiting for threads to close
         while len(self.thread_list) != 0:
             time.sleep(1)
-        self.bar.stop()
+        self.enableActions()
         # If any of the copying processes fail, fail_drives is increased and 
         if self.failed_drives == 0:
             self.alert("Copying files has completed; drives can be removed.")
@@ -234,6 +234,16 @@ class Main(Frame):
         #print(command)
         return 1
 
+    # Methods to be called before and after certain actions to switch the states
+    # of certain buttons and the progress bar
+    def disableActions(self):
+        self.bar.start()
+        self.copy_button['state'] = 'disabled'
+        self.update_local_button['state'] = 'disabled'
+    def enableActions(self):
+        self.bar.stop()
+        self.copy_button['state'] = 'enabled'
+        self.update_local_button['state'] = 'enabled'
 
     ''''''''''''''''''''''''''''''''''''''''''''''''''
     ''' Methods for updating the local ISO storage '''
@@ -269,6 +279,10 @@ class Main(Frame):
         local_iso_files = {}
         shared_iso_files = {}
 
+        # lists for threads that'll be spawned below
+        self.adder_threads = []
+        self.updater_threads = []
+
         # gets full paths to all local .iso files
         self.iso_dict = {}
         local = self.findISOs(iso_path)
@@ -284,7 +298,7 @@ class Main(Frame):
         # two parts: add new ISOs and update existing ISOs
         # Finding and Adding new ISOs
         need_to_add = [i for i in shared if i not in local]
-        self.bar.start()
+        self.disableActions()
         if len(need_to_add) != 0:
             updated=True
             print("need 2 copy", need_to_add)
@@ -292,7 +306,9 @@ class Main(Frame):
                 source_dir = self.iso_dict[d]
                 dest_dir = self.iso_dict[d].replace(iso_storage, iso_path)
                 print("copying {} from {} to {}".format(d, source_dir, dest_dir))
-                sh.copytree(source_dir, dest_dir)
+                add_ISO = threading.Thread(target=self.adderISOHelper, args=(source_dir, dest_dir,))
+                self.adder_threads.append(add_ISO)
+                add_ISO.start()
         # Check if local has the most recent .iso file. If not, update and replace        
         for i in local_iso_files.keys():
             try:
@@ -305,21 +321,39 @@ class Main(Frame):
                 if local_mod_time < shared_mod_time: # if the local has an older timestamp
                     print("updating from {} to {}".format(local_path, shared_path))
                     os.remove(local_path)
+                    new_path = shared_path.replace(iso_storage, iso_path)
                     # copy2 keeps modification time (important bc above)
-                    sh.copy2(shared_path, shared_path.replace(iso_storage, iso_path))
+                    update_ISO = threading.Thread(target=self.updaterISOHelper, args=(shared_path, new_path,))
+                    self.updater_threads.append(update_ISO)
+                    update_ISO.start()
                     updated=True
             except KeyError:
                 self.alert("There is an ISO which the local host has but the shared location does not.\nPlease see Austyn about this issue.")
             except Exception as e:
                 self.alert("Error occured: {}".format(e))
-        self.bar.stop()
+        print(len(self.adder_threads), len(self.updater_threads))
+        count =0
+        while (len(self.adder_threads) != 0) or (len(self.updater_threads) != 0):
+            count += 1
+            time.sleep(1)
+        print(count)
+        self.enableActions()
         if updated:
             self.alert("Update finished. Please restart application")
         else:
             self.alert("Software already up to date.")
 
-
-
+    # Mini methods to thread the copying of new ISOs in the checkForNewISOS method
+    def adderISOHelper(self, source, dest):
+        print("START-COPYTREE", "###FROM###", source)
+        sh.copytree(source, dest)
+        print("STOP-COPYTREE", "###FROM###", dest)
+        rm = self.adder_threads.pop()
+    def updaterISOHelper(self, source, dest):
+        print("START-COPY2", "###FROM###", source)
+        sh.copy2(source, dest)
+        print("STOP-COPY2", "###FROM###", dest)
+        rm = self.updater_threads.pop()
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ''' Container class for Main - Needed by Tkinter for organization purposes '''
