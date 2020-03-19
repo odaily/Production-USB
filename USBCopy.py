@@ -72,22 +72,24 @@ class Main(Frame):
         except IndexError:
             self.menu_var.set("No Options")
         self.file_menu = OptionMenu(self, self.menu_var, *self.options)
-        self.file_menu.grid(column=0,row=1,pady=10, padx=10, sticky=W)
+        self.file_menu.grid(column=1,row=1,pady=10, padx=10, sticky=W)
         self.file_menu['menu'].configure(font=('helvetica',(14)))
-
         # Button to start copying process
         self.copy_button = Button(self, text="Begin File Transfer", command=self.precopy, style="TButton")
-        self.copy_button.grid(column=1,row =1, padx=10, pady=10)
+        self.copy_button.grid(column=2,row =1, padx=10, pady=10)
         # Progress bar 
         self.bar = Progressbar(self, length=300)
-        self.bar.grid(row=2, column=0, columnspan=3, pady=30, padx=30)
+        self.bar.grid(row=2, column=0, columnspan=3, pady=30, padx=30, sticky=W)
         # Help button
         self.help = Button(self, text="Quick Help Guide", command=self.helpMenu, style="TButton")
         self.help.grid(row=0, column=3, padx=20, pady=20, sticky=N+E)
         # Update button
         self.update_local_button = Button(self, text="Check for updates", command=self.precheck, style="TButton")
         self.update_local_button.grid(row=3, column=3, padx=20, pady=20)
-        
+        # SoloX Checkbox
+        self.solox_option = IntVar()
+        self.checkbox = Checkbutton(self, text="SoloX", variable=self.solox_option)
+        self.checkbox.grid(column=0, row=1, pady=15, padx=15, sticky=W)
 
         ########################
         #### Create the GUI ####
@@ -130,6 +132,7 @@ class Main(Frame):
             # setting variables
             self.iso_name = os.listdir(self.iso_dir)[0]
             self.full_iso_path = self.iso_dir + "/" + self.iso_name
+            self.full_solox_path = self.solox_path + '/' + os.listdir(self.solox_path)[0]
             # Confirmation blurb
             confirmation = Label(self.precopy_window, text="Please confirm the file and drive(s) below are correct. If so, click okay and the file transfer will begin",wraplength = 290,font = ("helvetica",13))
             confirmation.grid(row=0, column=0, columnspan=10, pady=20, padx=20, sticky=W+N)
@@ -148,6 +151,9 @@ class Main(Frame):
                 timing_text.grid(row=6, column=0)
             except KeyError:
                 pass
+            if self.solox_option.get() == 1:
+                format_text = Label(self.precopy_window, text="Solox option was selected, USB drive will be formatted and will require more time.", font=("helvetica", 13, "bold"))
+                format_text.grid(row=7, column=0)
             # Confirmation button
             self.get_files_thread = threading.Thread(target=self.getFiles)            
             confirm_button = Button(self.precopy_window, text="Okay", command=lambda : [self.precopy_window.destroy(),self.get_files_thread.start()])
@@ -207,13 +213,17 @@ class Main(Frame):
     # copies the iso to the next drive in the list of drives that need to be copied to
     def copyIso(self, n):
         dr = self.usable_drives_list[n]
-        if self.iso_selected == "UEIPAC Option 11/12": # If SoloX, drive needs to be formatted to NTFS
-            self.format_drive(dr)
-
         #print("Started copying to {}:/ at {}.".format(dr, time.strftime("%H:%M:%S",time.localtime())))
         try:
+            if self.solox_option.get() == 1: # If SoloX, drive needs to be formatted to NTFS
+                self.format_drive(dr)
+                sh.copy(self.full_solox_path, "{}:\\".format(dr))
+                if self.iso_selected == "UEIPAC":
+                    raise InternalError("Just exit the bits")
             sh.copy(self.full_iso_path, "{}:\\".format(dr))
             #print("Finished {}:/ at {}.".format(dr, time.strftime("%H:%M:%S",time.localtime())))
+        except InternalError:
+            pass
         except:
             self.failed_drives += 1
             self.alert("Ran into an error copying to drive {}:/. Please retry copying to that drive.".format(dr))
@@ -258,7 +268,8 @@ class Main(Frame):
                 pass
             elif len(os.listdir(subdir_path)) == 1: # IF folder only contains iso.
                 if d == "SoloX":
-                    self.iso_dict["UEIPAC Option 11/12"] = subdir_path
+                    self.solox_path = subdir_path
+                    #self.iso_dict["UEIPAC Option 11/12"] = subdir_path
                 elif d == "PPC":
                     self.iso_dict["UEIPAC"] = subdir_path
                 else:
@@ -332,7 +343,7 @@ class Main(Frame):
             except Exception as e:
                 self.alert("Error occured: {}".format(e))
         print(len(self.adder_threads), len(self.updater_threads))
-        count =0
+        count = 0
         while (len(self.adder_threads) != 0) or (len(self.updater_threads) != 0):
             count += 1
             time.sleep(1)
@@ -345,14 +356,10 @@ class Main(Frame):
 
     # Mini methods to thread the copying of new ISOs in the checkForNewISOS method
     def adderISOHelper(self, source, dest):
-        print("START-COPYTREE", "###FROM###", source)
         sh.copytree(source, dest)
-        print("STOP-COPYTREE", "###FROM###", dest)
         rm = self.adder_threads.pop()
     def updaterISOHelper(self, source, dest):
-        print("START-COPY2", "###FROM###", source)
         sh.copy2(source, dest)
-        print("STOP-COPY2", "###FROM###", dest)
         rm = self.updater_threads.pop()
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
